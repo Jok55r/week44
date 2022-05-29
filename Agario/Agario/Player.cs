@@ -2,12 +2,14 @@
 using SFML.Graphics;
 using SFML.System;
 using System;
+using System.Collections.Generic;
 
 namespace Agario
 {
     internal class Player
     {
         Random rnd = new Random();
+        public List<Player> players = new List<Player>();
 
         public int lastFoodAtes = 0;
         public float size = 20;
@@ -18,17 +20,18 @@ namespace Agario
 
         public Player()
         {
+            //Player player = new Player();
             playerObj = new CircleShape(size, 1000);
+            playerObj.Position = new Vector2f(0, 0);
             playerObj.FillColor = Color.Yellow;
+            //players.Add(pla);
+            //SpawnPlayer(playerObj.Position, size);
         }
 
         public void Move()
         {
             Vector2f oldMousePos = playerObj.Position;
             Vector2f mousePos = new Vector2f(Mouse.GetPosition().X, Mouse.GetPosition().Y);
-
-            float distanceX = mousePos.X - oldMousePos.X;
-            float distanceY = mousePos.Y - oldMousePos.Y;
 
             if (mousePos.X - oldMousePos.X < 0) xDir = -speed;
             if (mousePos.X - oldMousePos.X > 0) xDir = +speed;
@@ -65,10 +68,31 @@ namespace Agario
             return false;
         }
 
+        public void Duplicate()
+        {
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
+            {
+                size /= 2;
+            }
+        }
+
+        public void SpawnPlayer(Vector2f pos, float size)
+        {
+            Player player = new Player();
+            player.playerObj = new CircleShape(size, 1000);
+            player.playerObj.FillColor = Color.Yellow;
+            player.playerObj.Position = pos;
+            player.playerObj.Radius = size;
+            players.Add(player);
+        }
+
         public void Update(Food[] food, RenderWindow win)
         {
             Move();
             NewSize(food, win);
+            Duplicate();
+
+            win.Draw(playerObj);
         }
     }
 }
