@@ -7,11 +7,13 @@ namespace Agario
 {
     internal class Player
     {
+        Random rnd = new Random();
+
         public int lastFoodAtes = 0;
         public float size = 20;
-        public uint oldMass = 10;
-        public uint mass = 10;
-        public float speed = 1.005f;
+        public float xDir = 0;
+        public float yDir = 0;
+        public float speed = 1f;
         public CircleShape playerObj = new CircleShape();
 
         public Player()
@@ -28,30 +30,34 @@ namespace Agario
             float distanceX = mousePos.X - oldMousePos.X;
             float distanceY = mousePos.Y - oldMousePos.Y;
 
-            playerObj.Position = new Vector2f(oldMousePos.X + distanceX - distanceX / speed, oldMousePos.Y + distanceY - distanceY / speed);
+            if (mousePos.X - oldMousePos.X < 0) xDir = -speed;
+            if (mousePos.X - oldMousePos.X > 0) xDir = +speed;
+            if (mousePos.Y - oldMousePos.Y < 0) yDir = -speed;
+            if (mousePos.Y - oldMousePos.Y > 0) yDir = +speed;
+
+            playerObj.Position = new Vector2f(oldMousePos.X + xDir, oldMousePos.Y + yDir);
         }
 
-        public void NewSize(RenderWindow window)
+        public void NewSize(Food[] food, RenderWindow win)
         {
-            if (AteFood(window))
+            if (AteFood(food, win))
             {
-                size += mass - oldMass;
-                oldMass = mass;
-                speed *= 0.999999f;
+                size++;
+                speed *= 0.99f;
             }
 
             playerObj.Radius = size;
         }
 
-        public bool AteFood(RenderWindow window)
+        public bool AteFood(Food[] food, RenderWindow win)
         {
-            Food food = new Food(window);
-
-            for (int i = 0; i < food.howMany; i++)
+            for (int i = 0; i < food.Length; i++)
             {
-                if (Math.Abs(playerObj.Position.Y - food.foodObj[i].Position.Y) < 20 &&
-                    Math.Abs(playerObj.Position.X - food.foodObj[i].Position.X) < 20)
+                if (Math.Abs(playerObj.Position.X - food[i].foodObj.Position.X + size / 2) < size &&
+                    Math.Abs(playerObj.Position.Y - food[i].foodObj.Position.Y + size / 2) < size)
                 {
+                    food[i] = new Food(win, new Vector2f(rnd.Next(0, (int)win.Size.X), rnd.Next(0, (int)win.Size.Y)),
+                       new Color((byte)rnd.Next(0, 256), (byte)rnd.Next(0, 256), (byte)rnd.Next(0, 256)));
                     lastFoodAtes = i;
                     return true;
                 }
@@ -59,13 +65,10 @@ namespace Agario
             return false;
         }
 
-        public void Update(RenderWindow window)
+        public void Update(Food[] food, RenderWindow win)
         {
             Move();
-            NewSize(window);
-
-            window.Draw(playerObj);
-            window.Display();
+            NewSize(food, win);
         }
     }
 }
