@@ -11,7 +11,7 @@ namespace Agario
         const uint width = 1920;
         const uint height = 1080;
         const uint fps = 240;
-        public const int howManyFood = 100;
+        public const int howManyFood = 2500;
 
         public void GameLoop()
         {
@@ -19,7 +19,7 @@ namespace Agario
             win.Closed += WindowClosed;
             win.SetFramerateLimit(fps);
 
-            Player player = new Player();
+            Player player = new Player(new Vector2f(0, 0));
             Food[] food = new Food[howManyFood];
             for (int i = 0; i < howManyFood; i++) {
                 food[i] = new Food(win, new Vector2f(rnd.Next(0, (int)win.Size.X), rnd.Next(0, (int)win.Size.Y)),
@@ -34,10 +34,15 @@ namespace Agario
                 for (int i = 0; i < howManyFood; i++) {
                     win.Draw(food[i].foodObj);
                 }
-                win.Draw(player.playerObj);
+                for (int i = 0; i < player.players.Count; i++) {
+                    win.Draw(player.players[i].playerObj);
+                }
+                //win.Draw(player.playerObj);
                 win.Display();
 
-                player.Update(food, win);
+                for (int i = 0; i < player.players.Count; i++) {
+                    player.players[i].Update(food, win);
+                }
             }
         }
 

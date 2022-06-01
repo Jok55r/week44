@@ -2,6 +2,7 @@
 using SFML.Graphics;
 using SFML.System;
 using System;
+using System.Threading;
 using System.Collections.Generic;
 
 namespace Agario
@@ -11,6 +12,7 @@ namespace Agario
         Random rnd = new Random();
         public List<Player> players = new List<Player>();
 
+        public bool isPressed = false;
         public int lastFoodAtes = 0;
         public float size = 20;
         public float xDir = 0;
@@ -18,14 +20,12 @@ namespace Agario
         public float speed = 1f;
         public CircleShape playerObj = new CircleShape();
 
-        public Player()
+        public Player(Vector2f pos)
         {
-            //Player player = new Player();
+            players.Add(this);
             playerObj = new CircleShape(size, 1000);
-            playerObj.Position = new Vector2f(0, 0);
+            playerObj.Position = pos;
             playerObj.FillColor = Color.Yellow;
-            //players.Add(pla);
-            //SpawnPlayer(playerObj.Position, size);
         }
 
         public void Move()
@@ -70,29 +70,35 @@ namespace Agario
 
         public void Duplicate()
         {
-            if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Space) && !isPressed && size >= 40 && players.Count <= 8)
             {
                 size /= 2;
+                speed *= speed * 2f;
+                isPressed = true;
+                int j = players.Count;
+                for (int i = 0; i < j; i++)
+                {
+                    players.Add(new Player(this.playerObj.Position));
+                    DestroyCopy(players[players.Count - 1]);
+                }
             }
+            else if (!Keyboard.IsKeyPressed(Keyboard.Key.Space))
+                isPressed = false;
         }
 
-        public void SpawnPlayer(Vector2f pos, float size)
+        public void DestroyCopy(Player playerCpoy)
         {
-            Player player = new Player();
-            player.playerObj = new CircleShape(size, 1000);
-            player.playerObj.FillColor = Color.Yellow;
-            player.playerObj.Position = pos;
-            player.playerObj.Radius = size;
-            players.Add(player);
+            /*Thread.Sleep(5000);
+            players.Remove(playerCpoy);*/
         }
 
-        public void Update(Food[] food, RenderWindow win)
+        public  void Update(Food[] food, RenderWindow win)
         {
             Move();
             NewSize(food, win);
             Duplicate();
 
-            win.Draw(playerObj);
+            //win.Draw(playerObj);
         }
     }
 }
