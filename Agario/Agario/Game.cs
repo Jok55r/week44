@@ -7,42 +7,65 @@ namespace Agario
 {
     internal class Game
     {
-        Random rnd = new Random();
         const uint width = 1920;
         const uint height = 1080;
         const uint fps = 240;
-        public const int howManyFood = 2500;
+        const int howManyBots = 10;
+
+        Random rnd = new Random();
+        Randomchyk randomchyk = new Randomchyk();
+        Entity player = new Entity(new Vector2f(0, 0), true, Color.White, 20);
+        Entity[] bots = new Entity[howManyBots];
+        Food[] food; 
+        Food f;
+        RenderWindow win = new RenderWindow(new VideoMode(width, height), "Game window");
 
         public void GameLoop()
         {
-            RenderWindow win = new RenderWindow(new VideoMode(width, height), "Game window");
             win.Closed += WindowClosed;
             win.SetFramerateLimit(fps);
 
-            Player player = new Player(new Vector2f(0, 0));
-            Food[] food = new Food[howManyFood];
-            for (int i = 0; i < howManyFood; i++) {
-                food[i] = new Food(win, new Vector2f(rnd.Next(0, (int)win.Size.X), rnd.Next(0, (int)win.Size.Y)),
-                    new Color((byte)rnd.Next(0, 256), (byte)rnd.Next(0, 256), (byte)rnd.Next(0, 256)));
+            f = new Food(randomchyk.RandVect(win), randomchyk.RandColor());
+            food = new Food[f.howManyFood];
+
+            for (int i = 0; i < f.howManyFood; i++)
+            {
+                food[i] = new Food(randomchyk.RandVect(win), randomchyk.RandColor());
+            }
+            for (int i = 0; i < howManyBots; i++)
+            {
+                bots[i] = new Entity(randomchyk.RandVect(win), false, randomchyk.RandColor(), rnd.Next(15, 40));
             }
 
             while (win.IsOpen)
             {
-                win.DispatchEvents();
-                win.Clear(new Color(0, 30, 30));
+                GameLogic();
+            }
+        }
 
-                for (int i = 0; i < howManyFood; i++) {
-                    win.Draw(food[i].foodObj);
-                }
-                for (int i = 0; i < player.players.Count; i++) {
-                    win.Draw(player.players[i].playerObj);
-                }
-                //win.Draw(player.playerObj);
-                win.Display();
+        void GameLogic()
+        {
+            win.DispatchEvents();
+            win.Clear(new Color(0, 30, 30));
 
-                for (int i = 0; i < player.players.Count; i++) {
-                    player.players[i].Update(food, win);
-                }
+            Update();
+
+            win.Display();
+        }
+
+        void Update()
+        {
+            for (int i = 0; i < f.howManyFood; i++)
+            {
+                food[i].Update(win);
+            }
+            for (int i = 0; i < howManyBots; i++)
+            {
+                bots[i].Update(food, win, bots);
+            }
+            for (int i = 0; i < player.playerList.Count; i++)
+            {
+                player.playerList[i].Update(food, win, bots);
             }
         }
 
