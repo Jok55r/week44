@@ -7,8 +7,6 @@ namespace Agario
 {
     internal class Game
     {
-        const uint width = 1920;
-        const uint height = 1080;
         const uint fps = 240;
         const int howManyBots = 10;
 
@@ -18,7 +16,7 @@ namespace Agario
         Entity[] bots = new Entity[howManyBots];
         Food[] food; 
         Food f;
-        RenderWindow win = new RenderWindow(new VideoMode(width, height), "Game window");
+        RenderWindow win = new RenderWindow(new VideoMode(1920, 1080), "Game window");
 
         public void GameLoop()
         {

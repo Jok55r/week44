@@ -11,16 +11,19 @@ namespace Agario
     {
         Random rnd = new Random();
         Randomchyk randomchyk = new Randomchyk();
+
         int howManyEat = 0;
+        float xDir = 0;
+        float yDir = 0;
+        float speed = 1f;
+        bool isPlayer = false;
+        bool goingForFood = false;
+        int towhichIsGoing = 0;
 
         public List<Entity> playerList = new List<Entity>();
-        public bool isPressed = false;
+        bool isPressed = false;
         public int lastFoodAtes = 0;
         public int size = 20;
-        public float xDir = 0;
-        public float yDir = 0;
-        public float speed = 1f;
-        public bool isPlayer = false;
         public CircleShape entityObj = new CircleShape();
 
         public Entity(Vector2f pos, bool isPlayer, Color col, int rad)
@@ -40,22 +43,16 @@ namespace Agario
             Vector2f oldPos = entityObj.Position;
             Vector2f newPos = new Vector2f(Mouse.GetPosition().X, Mouse.GetPosition().Y);
 
-            if (!isPlayer)
+            if (!isPlayer && !goingForFood)
             {
-                Food closestOne = food[0];
-                for (int i = 0; i < food[0].howManyFood; i++)
-                {
-                    if (isCloseEnough(entityObj, food[i].foodObj, 
-                        (int)Math.Abs(entityObj.Position.X - food[i].foodObj.Position.X + entityObj.Radius / 2),
-                        (int)Math.Abs(entityObj.Position.Y - food[i].foodObj.Position.Y + entityObj.Radius / 2)))
-                    {
-                        closestOne = food[i];
-                        if (rnd.Next(0, 2) == 1) break;
-                    }
-                }
-
-                newPos = closestOne.foodObj.Position;
+                int num = randomchyk.RandNum(0, food[0].howManyFood);
+                towhichIsGoing = num;
+                newPos = food[num].foodObj.Position;
+                var thread1 = new Thread(new ThreadStart(() => ChangePosition(this)));
+                goingForFood = true;
             }
+            else if (!isPlayer)
+                newPos = food[towhichIsGoing].foodObj.Position;
 
             if (newPos.X - oldPos.X < 0) xDir = -speed;
             if (newPos.X - oldPos.X > 0) xDir = +speed;
@@ -65,12 +62,18 @@ namespace Agario
             entityObj.Position = new Vector2f(oldPos.X + xDir, oldPos.Y + yDir);
         }
 
+        void ChangePosition(Entity bot)
+        {
+            Thread.Sleep(2000);
+            goingForFood = false;
+        }
+
         void NewSize(Food[] food, RenderWindow win, Entity[] bots)
         {
             if (LookIfAte(food, win, bots))
             {
                 size += howManyEat;
-                speed -= howManyEat * 0.005f;
+                speed -= howManyEat * 0.002f;
             }
             entityObj.Radius = size;
         }
