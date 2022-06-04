@@ -21,7 +21,8 @@ namespace Agario
         int towhichIsGoing = 0;
 
         public List<Entity> playerList = new List<Entity>();
-        bool isPressed = false;
+        bool isPressedSpace = false;
+        bool isPressedR = false;
         public int lastFoodAtes = 0;
         public int size = 20;
         public CircleShape entityObj = new CircleShape();
@@ -78,7 +79,7 @@ namespace Agario
             entityObj.Radius = size;
         }
 
-        bool isCloseEnough(CircleShape obj1, CircleShape obj2, int needsToBeSmallerX, int needsToBeSmallerY)
+        bool isCloseEnough(CircleShape obj1, CircleShape obj2, float needsToBeSmallerX, float needsToBeSmallerY)
         {
             return Math.Abs(obj1.Position.X - obj2.Position.X + obj1.Radius / 2) < needsToBeSmallerX &&
                    Math.Abs(obj1.Position.Y - obj2.Position.Y + obj1.Radius / 2) < needsToBeSmallerY;
@@ -111,11 +112,11 @@ namespace Agario
 
         public void TryDuplicate(RenderWindow win)
         {
-            if (Keyboard.IsKeyPressed(Keyboard.Key.Space) && !isPressed && size >= 40 && playerList.Count < 9)
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Space) && !isPressedSpace && size >= 40 && playerList.Count < 9)
             {
                 size /= 2;
                 speed += size * 0.01f;
-                isPressed = true;
+                isPressedSpace = true;
 
                 Vector2f newPos = new Vector2f(this.entityObj.Position.X + xDir * this.size, this.entityObj.Position.Y + yDir * this.size);
 
@@ -123,7 +124,36 @@ namespace Agario
                 var threa1 = new Thread(new ThreadStart(() => DestroyCopy(playerList[1])));
             }
             else if (!Keyboard.IsKeyPressed(Keyboard.Key.Space))
-                isPressed = false;
+                isPressedSpace = false;
+        }
+
+        public void TryChangePlayer(Entity[] bots)
+        {
+            if (Keyboard.IsKeyPressed(Keyboard.Key.R) && !isPressedR)
+            {
+                float howFarX = int.MaxValue;
+                float howFarY = int.MaxValue;
+                int whoNeedToChange = 0;
+                int whoAmI = 0;
+
+                for (int i = 0; i < bots.Length; i++)
+                {
+                    if (bots[i] != this && isCloseEnough(entityObj, bots[i].entityObj, howFarX, howFarY))
+                    {
+                        howFarX = Math.Abs(entityObj.Position.X - bots[i].entityObj.Position.X + entityObj.Radius / 2);
+                        howFarY = Math.Abs(entityObj.Position.Y - bots[i].entityObj.Position.Y + entityObj.Radius / 2);
+                        whoNeedToChange = i;
+                    }
+                    else if (bots[i] == this)
+                        whoAmI = i;
+                }
+                bots[whoAmI].isPlayer = false;
+                bots[whoNeedToChange].isPlayer = true;
+
+                isPressedR = true;
+            }
+            else if (!Keyboard.IsKeyPressed(Keyboard.Key.R))
+                isPressedR = false;
         }
 
         public void DestroyCopy(Entity playerCopy)
@@ -137,6 +167,7 @@ namespace Agario
             Move(food);
             NewSize(food, win, bots);
             if (isPlayer) TryDuplicate(win);
+            if (isPlayer) TryChangePlayer(bots);
 
             win.Draw(this.entityObj);
         }

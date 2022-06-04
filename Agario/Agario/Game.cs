@@ -8,12 +8,11 @@ namespace Agario
     internal class Game
     {
         const uint fps = 240;
-        const int howManyBots = 10;
+        const int howManyEntities = 10;
 
         Random rnd = new Random();
         Randomchyk randomchyk = new Randomchyk();
-        Entity player = new Entity(new Vector2f(0, 0), true, Color.White, 20);
-        Entity[] bots = new Entity[howManyBots];
+        Entity[] entities = new Entity[howManyEntities];
         Food[] food; 
         Food f;
         RenderWindow win = new RenderWindow(new VideoMode(1920, 1080), "Game window");
@@ -30,9 +29,12 @@ namespace Agario
             {
                 food[i] = new Food(randomchyk.RandVect(win), randomchyk.RandColor());
             }
-            for (int i = 0; i < howManyBots; i++)
+            for (int i = 0; i < howManyEntities; i++)
             {
-                bots[i] = new Entity(randomchyk.RandVect(win), false, randomchyk.RandColor(), rnd.Next(15, 40));
+                if (i == 0)
+                   entities[i] = new Entity(randomchyk.RandVect(win), true, Color.White, rnd.Next(15, 40));
+                else 
+                    entities[i] = new Entity(randomchyk.RandVect(win), false, randomchyk.RandColor(), rnd.Next(15, 40));
             }
 
             while (win.IsOpen)
@@ -57,13 +59,9 @@ namespace Agario
             {
                 food[i].Update(win);
             }
-            for (int i = 0; i < howManyBots; i++)
+            for (int i = 0; i < howManyEntities; i++)
             {
-                bots[i].Update(food, win, bots);
-            }
-            for (int i = 0; i < player.playerList.Count; i++)
-            {
-                player.playerList[i].Update(food, win, bots);
+                entities[i].Update(food, win, entities);
             }
         }
 
