@@ -7,22 +7,31 @@ using System.Collections.Generic;
 
 namespace Agario
 {
+    internal class Buttons
+    {
+        public Keyboard.Key key;
+        public bool pressed;
+
+        public Buttons(Keyboard.Key aKey)
+        {
+            this.key = aKey;
+            pressed = false;
+        }
+    }
+
     internal class Entity
     {
-        Random rnd = new Random();
-        Randomchyk randomchyk = new Randomchyk();
+        private Randomchyk randomchyk = new Randomchyk();
+        private Buttons button = new Buttons(Keyboard.Key.R);
 
-        int howManyEat = 0;
-        float xDir = 0;
-        float yDir = 0;
-        float speed = 1f;
-        bool isPlayer = false;
-        bool goingForFood = false;
-        int towhichIsGoing = 0;
+        private int howManyEat = 0;
+        private float speed = 1f;
+        private bool isPlayer = false;
+        private bool goingForFood = false;
+        private int toWhichIsGoing = 0;
+        //private bool isPressedR = false;
 
         public List<Entity> playerList = new List<Entity>();
-        bool isPressedSpace = false;
-        bool isPressedR = false;
         public int lastFoodAtes = 0;
         public int size = 20;
         public CircleShape entityObj = new CircleShape();
@@ -32,46 +41,50 @@ namespace Agario
             if (isPlayer)
                 playerList.Add(this);
 
-            entityObj = new CircleShape(rad, 1000);
-            entityObj.Position = pos;
-            entityObj.FillColor = col;
+            entityObj = new CircleShape(rad, 1000)
+            {
+                Position = pos,
+                FillColor = col
+            };
 
             this.isPlayer = isPlayer;
         }
 
         void Move(Food[] food)
         {
+            float dx = 0;
+            float dy = 0;
             Vector2f oldPos = entityObj.Position;
             Vector2f newPos = new Vector2f(Mouse.GetPosition().X, Mouse.GetPosition().Y);
 
             if (!isPlayer && !goingForFood)
             {
                 int num = randomchyk.RandNum(0, food[0].howManyFood);
-                towhichIsGoing = num;
+                toWhichIsGoing = num;
                 newPos = food[num].foodObj.Position;
-                var thread1 = new Thread(new ThreadStart(() => ChangePosition(this)));
+                var thread1 = new Thread(new ThreadStart(() => ChangePosition()));
                 goingForFood = true;
             }
             else if (!isPlayer)
-                newPos = food[towhichIsGoing].foodObj.Position;
+                newPos = food[toWhichIsGoing].foodObj.Position;
 
-            if (newPos.X - oldPos.X < 0) xDir = -speed;
-            if (newPos.X - oldPos.X > 0) xDir = +speed;
-            if (newPos.Y - oldPos.Y < 0) yDir = -speed;
-            if (newPos.Y - oldPos.Y > 0) yDir = +speed;
+            if (newPos.X - oldPos.X < 0) dx = -speed;
+            if (newPos.X - oldPos.X > 0) dx = +speed;
+            if (newPos.Y - oldPos.Y < 0) dy = -speed;
+            if (newPos.Y - oldPos.Y > 0) dy = +speed;
 
-            entityObj.Position = new Vector2f(oldPos.X + xDir, oldPos.Y + yDir);
+            entityObj.Position = new Vector2f(oldPos.X + dx, oldPos.Y + dy);
         }
 
-        void ChangePosition(Entity bot)
+        void ChangePosition()
         {
             Thread.Sleep(2000);
             goingForFood = false;
         }
 
-        void NewSize(Food[] food, RenderWindow win, Entity[] bots)
+        void NewSize(Food[] food, Vector2u winSize, Entity[] bots)
         {
-            if (LookIfAte(food, win, bots))
+            if (LookIfAte(food, winSize, bots))
             {
                 size += howManyEat;
                 speed -= howManyEat * 0.002f;
@@ -79,97 +92,71 @@ namespace Agario
             entityObj.Radius = size;
         }
 
-        bool isCloseEnough(CircleShape obj1, CircleShape obj2, float needsToBeSmallerX, float needsToBeSmallerY)
+        bool isCloseEnough(Vector2f obj1, Vector2f obj2, float needsToBeSmallerX, float needsToBeSmallerY)
         {
-            return Math.Abs(obj1.Position.X - obj2.Position.X + obj1.Radius / 2) < needsToBeSmallerX &&
-                   Math.Abs(obj1.Position.Y - obj2.Position.Y + obj1.Radius / 2) < needsToBeSmallerY;
+            return Math.Abs(obj1.X - obj2.X) < needsToBeSmallerX &&
+                   Math.Abs(obj1.Y - obj2.Y) < needsToBeSmallerY;
         }
 
-        bool LookIfAte(Food[] food, RenderWindow win, Entity[] bots)
+        bool LookIfAte(Food[] food, Vector2u winSize, Entity[] entities)
         {
             for (int i = 0; i < food.Length; i++)
             {
-                if (isCloseEnough(this.entityObj, food[i].foodObj, (int)this.size, (int)this.size))
+                if (isCloseEnough(entityObj.Position, food[i].foodObj.Position, (int)this.size, (int)this.size))
                 {
                     howManyEat = (int)(food[i].foodObj.Radius / 10);
-                    food[i] = new Food(randomchyk.RandVect(win), randomchyk.RandColor());
+                    food[i] = new Food(randomchyk.RandVect(winSize), randomchyk.RandColor());
                     lastFoodAtes = i;
                     return true;
                 }
             }
-            for (int i = 0; i < bots.Length; i++)
+            for (int i = 0; i < entities.Length; i++)
             {
-                if (isCloseEnough(this.entityObj, bots[i].entityObj, (int)this.size / 2, (int)this.size / 2) 
-                    && entityObj.Radius > bots[i].entityObj.Radius)
+                if (isCloseEnough(entityObj.Position, entities[i].entityObj.Position, (int)size / 2, (int)size / 2) 
+                    && entityObj.Radius > entities[i].entityObj.Radius)
                 {
-                    howManyEat = (int)(bots[i].entityObj.Radius / 4);
-                    bots[i] = new Entity(randomchyk.RandVect(win), false, randomchyk.RandColor(), size);
+                    howManyEat = (int)(entities[i].entityObj.Radius / 4);
+                    entities[i] = new Entity(randomchyk.RandVect(winSize), false, randomchyk.RandColor(), size);
                     return true;
                 }
             }
             return false;
         }
 
-        public void TryDuplicate(RenderWindow win)
+        public void TryChangePlayer(Entity[] entities)
         {
-            if (Keyboard.IsKeyPressed(Keyboard.Key.Space) && !isPressedSpace && size >= 40 && playerList.Count < 9)
-            {
-                size /= 2;
-                speed += size * 0.01f;
-                isPressedSpace = true;
-
-                Vector2f newPos = new Vector2f(this.entityObj.Position.X + xDir * this.size, this.entityObj.Position.Y + yDir * this.size);
-
-                playerList.Add(new Entity(newPos, true, this.entityObj.FillColor, (int)this.entityObj.Radius));
-                var threa1 = new Thread(new ThreadStart(() => DestroyCopy(playerList[1])));
-            }
-            else if (!Keyboard.IsKeyPressed(Keyboard.Key.Space))
-                isPressedSpace = false;
-        }
-
-        public void TryChangePlayer(Entity[] bots)
-        {
-            if (Keyboard.IsKeyPressed(Keyboard.Key.R) && !isPressedR)
+            if (Keyboard.IsKeyPressed(button.key) && !button.pressed)
             {
                 float howFarX = int.MaxValue;
                 float howFarY = int.MaxValue;
                 int whoNeedToChange = 0;
-                int whoAmI = 0;
 
-                for (int i = 0; i < bots.Length; i++)
+                for (int i = 0; i < entities.Length; i++)
                 {
-                    if (bots[i] != this && isCloseEnough(entityObj, bots[i].entityObj, howFarX, howFarY))
+                    if (entities[i] != this && isCloseEnough((Vector2f)Mouse.GetPosition(), entities[i].entityObj.Position, howFarX, howFarY))
                     {
-                        howFarX = Math.Abs(entityObj.Position.X - bots[i].entityObj.Position.X + entityObj.Radius / 2);
-                        howFarY = Math.Abs(entityObj.Position.Y - bots[i].entityObj.Position.Y + entityObj.Radius / 2);
+                        howFarX = Math.Abs(Mouse.GetPosition().X - entities[i].entityObj.Position.X);
+                        howFarY = Math.Abs(Mouse.GetPosition().Y - entities[i].entityObj.Position.Y);
                         whoNeedToChange = i;
                     }
-                    else if (bots[i] == this)
-                        whoAmI = i;
+                    else if (entities[i] == this)
+                        entities[i].isPlayer = false;
                 }
-                bots[whoAmI].isPlayer = false;
-                bots[whoNeedToChange].isPlayer = true;
+                entities[whoNeedToChange].isPlayer = true;
 
-                isPressedR = true;
+                button.pressed = true;
             }
             else if (!Keyboard.IsKeyPressed(Keyboard.Key.R))
-                isPressedR = false;
+                button.pressed = false;
         }
 
-        public void DestroyCopy(Entity playerCopy)
-        {
-            Thread.Sleep(1000);
-            playerList.Remove(playerCopy);
-        }
-
-        public void Update(Food[] food, RenderWindow win, Entity[] bots)
+        public void Update(Food[] food, RenderWindow win, Entity[] entities)
         {
             Move(food);
-            NewSize(food, win, bots);
-            if (isPlayer) TryDuplicate(win);
-            if (isPlayer) TryChangePlayer(bots);
+            NewSize(food, win.Size, entities);
+            if (isPlayer) TryChangePlayer(entities);
 
-            win.Draw(this.entityObj);
+            win.Draw(entityObj);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Agario
 
         public void Update(RenderWindow win)
         {
-            win.Draw(this.foodObj);
+            win.Draw(foodObj);
         }
     }
 }
