@@ -3,21 +3,24 @@ using SFML.System;
 
 namespace Agario
 {
-    internal class Food
+    internal class Food : Circle
     {
-        public int howManyFood = 250;
+        public static int howManyFood = 250;
         public const int size = 10;
-        public CircleShape foodObj = new CircleShape(size, 10);
 
         public Food(Vector2f pos, Color col)
         {
-            foodObj.FillColor = col;
-            foodObj.Position = pos;
+            shape = new CircleShape()
+            {
+                Radius = size,
+                FillColor = col,
+                Position = pos,
+            };
         }
 
-        public void Update(RenderWindow win)
+        public void Update()
         {
-            win.Draw(foodObj);
+            Global.win.Draw(shape);
         }
     }
 }

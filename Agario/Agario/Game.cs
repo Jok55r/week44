@@ -10,33 +10,28 @@ namespace Agario
         const uint fps = 240;
         const int howManyEntities = 10;
 
-        Randomchyk randomchyk = new Randomchyk();
-        Entity[] entities = new Entity[howManyEntities];
-        Food[] food; 
-        Food f;
-        RenderWindow win = new RenderWindow(new VideoMode(1920, 1080), "Game window");
+        readonly private Randomchyk randomchyk = new Randomchyk();
+        readonly private Entity[] entities = new Entity[howManyEntities];
+        readonly private Food[] food = new Food[Food.howManyFood];
 
         public void GameStart()
         {
-            win.Closed += WindowClosed;
-            win.SetFramerateLimit(fps);
+            Global.win.Closed += Global.WindowClosed;
+            Global.win.SetFramerateLimit(fps);
 
-            f = new Food(randomchyk.RandVect(win.Size), randomchyk.RandColor());
-            food = new Food[f.howManyFood];
-
-            for (int i = 0; i < f.howManyFood; i++)
+            for (int i = 0; i < Food.howManyFood; i++)
             {
-                food[i] = new Food(randomchyk.RandVect(win.Size), randomchyk.RandColor());
+                food[i] = new Food(randomchyk.RandVect(), randomchyk.RandColor());
             }
             for (int i = 0; i < howManyEntities; i++)
             {
-                if (i == 0)
-                   entities[i] = new Entity(randomchyk.RandVect(win.Size), true, Color.White, randomchyk.RandNum(15, 40));
+                if (i == Global.howManyPlayers)
+                   entities[i] = new Entity(randomchyk.RandVect(), true, Color.White, randomchyk.RandNum(15, 40));
                 else 
-                    entities[i] = new Entity(randomchyk.RandVect(win.Size), false, randomchyk.RandColor(), randomchyk.RandNum(15, 40));
+                    entities[i] = new Entity(randomchyk.RandVect(), false, randomchyk.RandColor(), randomchyk.RandNum(15, 40));
             }
 
-            while (win.IsOpen)
+            while (Global.win.IsOpen)
             {
                 GameLoop();
             }
@@ -44,38 +39,21 @@ namespace Agario
 
         void GameLoop()
         {
-            win.DispatchEvents();
-            win.Clear(new Color(0, 30, 30));
+            Global.win.DispatchEvents();
+            Global.win.Clear(new Color(0, 30, 30));
 
             Update();
 
-            win.Display();
+            Global.win.Display();
         }
 
         void Update()
         {
-            for (int i = 0; i < f.howManyFood; i++)
-            {
-                food[i].Update(win);
-            }
-            for (int i = 0; i < howManyEntities; i++)
-            {
-                entities[i].Update(food, win, entities);
-            }
-        }
+            foreach (var foods in food)
+                foods.Update();
 
-        /*void Loops(int howMany, Object[] obj)
-        {
-            for(int i = 0; i < howMany; i++)
-            {
-                obj[i].Update();
-            }
-        }*/
-
-        public void WindowClosed(object sender, EventArgs e)
-        {
-            RenderWindow w = (RenderWindow)sender;
-            w.Close();
+            foreach (var entity in entities)
+                entity.Update(food, entities);
         }
     }
 }
