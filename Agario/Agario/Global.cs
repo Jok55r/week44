@@ -2,6 +2,7 @@
 using SFML.Graphics;
 using System.IO;
 using System;
+using System.Collections.Generic;
 
 namespace Agario
 {
@@ -9,6 +10,8 @@ namespace Agario
     {
         readonly private static string[] lines = File.ReadAllLines(@"D:\Github\week44\Agario\Agario\FileToRead.txt");
         public static byte howManyPlayers = 1;
+        public const uint fps = 240;
+        public const int howManyEntities = 10;
 
         public static RenderWindow win = new RenderWindow
             (new VideoMode(uint.Parse(lines[0]), uint.Parse(lines[1])), lines[2]);

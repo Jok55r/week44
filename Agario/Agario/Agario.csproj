@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bullet.cs" />
     <Compile Include="Circle.cs" />
     <Compile Include="Food.cs" />
     <Compile Include="Game.cs" />
