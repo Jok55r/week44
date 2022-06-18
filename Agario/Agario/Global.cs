@@ -2,13 +2,12 @@
 using SFML.Graphics;
 using System.IO;
 using System;
-using System.Collections.Generic;
 
 namespace Agario
 {
     public static class Global
     {
-        readonly private static string[] lines = File.ReadAllLines(@"D:\Github\week44\Agario\Agario\FileToRead.txt");
+        readonly private static string[] lines = File.ReadAllLines(@"D:\Github\week44\Agario\Agario\bin\Debug\ReadIt.ini");
         public static byte howManyPlayers = 1;
         public const uint fps = 240;
         public const int howManyEntities = 10;

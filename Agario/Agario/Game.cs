@@ -1,4 +1,5 @@
 ﻿using SFML.Graphics;
+using System;
 
 namespace Agario
 {
@@ -17,6 +18,7 @@ namespace Agario
             {
                 food[i] = new Food(randomchyk.RandVect(), randomchyk.RandColor());
             }
+
             for (int i = 0; i < Global.howManyEntities; i++)
             {
                 if (i == Global.howManyPlayers - 1)

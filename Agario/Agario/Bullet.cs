@@ -7,8 +7,9 @@ namespace Agario
     internal class Bullet : Circle
     {
         private Vector2f d;
+        public static bool shot = false;
 
-        public Bullet(Vector2f startPos, Vector2f d, bool shot)
+        public Bullet(Vector2f startPos, Vector2f d)
         {
             shape = new CircleShape()
             {
@@ -21,7 +22,7 @@ namespace Agario
 
             this.d = d;
 
-            var thread1 = new Thread(new ThreadStart(() => Destroy(shot)));
+            var thread1 = new Thread(new ThreadStart(() => Destroy()));
             thread1.Start();
         }
 
@@ -31,7 +32,7 @@ namespace Agario
                 shape.Position += d;
         }
 
-        void Destroy(bool shot)
+        void Destroy()
         {
             Thread.Sleep(3000);
             shape = null;

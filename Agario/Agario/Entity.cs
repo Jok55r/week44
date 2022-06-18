@@ -14,7 +14,6 @@ namespace Agario
         private Bullet bullet;
 
         private bool isSpacePressed = false;
-        private bool shot = false;
 
         readonly private bool isPlayer = false;
         private int howManyEat = 0;
@@ -52,9 +51,9 @@ namespace Agario
                 newPos = food[toWhichIsGoing].shape.Position;
 
                 var thread1 = new Thread(new ThreadStart(() => BotChangePosition()));
-
                 goingForFood = true;
             }
+
             else if (!isPlayer)
                 newPos = food[toWhichIsGoing].shape.Position;
 
@@ -121,6 +120,7 @@ namespace Agario
                 {
                     if (entities[i].isPlayer) 
                         entities[i] = new Entity(true, Color.White);
+
                     else
                         entities[i] = new Entity(false, randomchyk.RandColor());
 
@@ -136,9 +136,9 @@ namespace Agario
             if (!isSpacePressed && Keyboard.IsKeyPressed(Keyboard.Key.Space) && shape.Radius > 40)
             {
                 shape.Radius -= 20;
-                bullet = new Bullet(centre + d * shape.Radius, new Vector2f((int)(d.X * 10), (int)(d.Y * 10)), shot);
+                bullet = new Bullet(centre + d * shape.Radius, new Vector2f((int)(d.X * 10), (int)(d.Y * 10)));
                 isSpacePressed = true;
-                shot = true;
+                Bullet.shot = true;
             }
 
             else if (isSpacePressed && !Keyboard.IsKeyPressed(Keyboard.Key.Space))
@@ -152,8 +152,7 @@ namespace Agario
                 if (entities[i].isPlayer)
                     continue;
 
-                if (IsIn(entities[i].centre, bullet.shape.Position, 
-                    new Vector2f(shape.Radius, shape.Radius)))
+                if (IsIn(entities[i].centre, bullet.shape.Position, new Vector2f(shape.Radius, shape.Radius)))
                 {
                     bullet.shape = null;
                     entities[i].shape.Radius /= 2;
@@ -166,10 +165,10 @@ namespace Agario
         {
             Move(food);
             NewSize(food, entities);
-            if (shot && bullet.shape != null) 
+            if (Bullet.shot && bullet.shape != null) 
                 LookIfShotSomeone(entities);
 
-            if (shot && bullet.shape != null)
+            if (Bullet.shot && bullet.shape != null)
                 Global.win.Draw(bullet.shape);
 
             Global.win.Draw(shape);
