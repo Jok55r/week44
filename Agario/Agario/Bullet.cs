@@ -1,42 +1,70 @@
 ﻿using SFML.Graphics;
 using SFML.System;
-using System.Threading;
+using System.Collections.Generic;
 
 namespace Agario
 {
     internal class Bullet : Circle
     {
-        private Vector2f d;
-        public static bool shot = false;
+        public float mass = 2 * Global.scale;
+        public bool shot = false;
+        readonly private List<Vector2f> d = new List<Vector2f>();
+        public List<CircleShape> ballz = new List<CircleShape>();
 
-        public Bullet(Vector2f startPos, Vector2f d)
+        public void Shoot(Vector2f startPos, Vector2f d)
         {
-            shape = new CircleShape()
+            ballz.Add(shape = new CircleShape(mass, 50)
             {
                 Position = startPos,
-                Radius = 20,
                 FillColor = Color.Black,
                 OutlineColor = Color.Red,
                 OutlineThickness = 5,
-            };
+            });
 
-            this.d = d;
-
-            var thread1 = new Thread(new ThreadStart(() => Destroy()));
-            thread1.Start();
+            this.d.Add(d);
         }
 
         public void Move()
         {
-            if (shape != null)
-                shape.Position += d;
+            for(int i = 0; i < ballz.Count; i++)
+            {
+                ballz[i].Position += d[i];
+            }
         }
 
-        void Destroy()
+        void TryDestroy()
         {
-            Thread.Sleep(3000);
-            shape = null;
-            shot = false;
+            if (ballz.Count > 5)
+            {
+                ballz.RemoveAt(0);
+                d.RemoveAt(0);
+            }
+        }
+
+        void LookIfShotSomeone(Entity[] entities)
+        {
+            for (int i = 0; i < entities.Length; i++)
+            {
+                if (entities[i].isPlayer)
+                    continue;
+
+                for (int j = 0; j < ballz.Count; j++)
+                {
+                    if (Entity.IsIn(entities[i].centre, ballz[j].Position, new Vector2f(shape.Radius, shape.Radius)))
+                    {
+                        ballz.RemoveAt(j);
+                        entities[i].shape.Radius /= 2;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void Update(Entity[] entities)
+        {
+            Move();
+            TryDestroy();
+            LookIfShotSomeone(entities);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using SFML.Graphics;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Agario
 {
@@ -10,6 +12,9 @@ namespace Agario
 
         public void GameStart()
         {
+            var task = Task.Factory.StartNew(() => CreateFile());
+            Task.WaitAll(task);
+
             Global.win.Closed += Global.WindowClosed;
             Global.win.SetFramerateLimit(Global.fps);
 
@@ -29,6 +34,30 @@ namespace Agario
             while (Global.win.IsOpen)
             {
                 GameLoop();
+            }
+        }
+
+        void CreateFile()
+        {
+            string path = @"D:\Github\week44\Agario\Agario\bin\Debug\ReadIt.ini";
+            string[] lines = { "1920", "1080", "Deez" };
+
+            try
+            {
+                StreamReader sr = new StreamReader(path);
+                sr.Close();
+            }
+            catch
+            {
+                var ini = File.Create("ReadIt.ini");
+                ini.Close();
+
+                StreamWriter sw = new StreamWriter(path);
+
+                sw.WriteLine(lines[0]);
+                sw.WriteLine(lines[1]);
+                sw.WriteLine(lines[2]);
+                sw.Close();
             }
         }
 

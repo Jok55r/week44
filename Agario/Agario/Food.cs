@@ -5,14 +5,13 @@ namespace Agario
 {
     internal class Food : Circle
     {
-        public static int howManyFood = 250;
-        public const int size = 10;
+        public static int howManyFood = (int)(4000 / Global.scale);
+        public const int size = Global.scale;
 
         public Food(Vector2f pos, Color col)
         {
-            shape = new CircleShape()
+            shape = new CircleShape(size, 10)
             {
-                Radius = size,
                 FillColor = col,
                 Position = pos,
             };

@@ -11,21 +11,18 @@ namespace Agario
         private const int howFatNeedToBe = 500;
 
         readonly private Randomchyk randomchyk = new Randomchyk();
-        private Bullet bullet;
+        readonly private Bullet bullet = new Bullet();
 
         private bool isSpacePressed = false;
 
-        readonly private bool isPlayer = false;
-        private int howManyEat = 0;
+        readonly public bool isPlayer = false;
         private float speed = 1f;
-        private bool goingForFood = false;
-        private int toWhichIsGoing = 0;
-
-        private Vector2f centre = new Vector2f(0, 0);
+        readonly private int toWhichIsGoing = 0;
+        public Vector2f centre = new Vector2f(0, 0);
 
         public Entity(bool isPlayer, Color col)
         {
-            shape = new CircleShape(randomchyk.RandNum(15, 40), 100)
+            shape = new CircleShape(2 * Global.scale, 100)
             {
                 Position = randomchyk.RandVect(),
                 FillColor = col,
@@ -34,6 +31,9 @@ namespace Agario
             };
             shape.Position += new Vector2f(shape.Radius, shape.Radius);
             this.isPlayer = isPlayer;
+
+            if (!isPlayer)
+                toWhichIsGoing = randomchyk.RandNum(0, Food.howManyFood);
         }
 
         void Move(Food[] food)
@@ -45,16 +45,7 @@ namespace Agario
             Vector2f oldPos = centre;
             Vector2f newPos = (Vector2f)Mouse.GetPosition();
 
-            if (!isPlayer && !goingForFood)
-            {
-                toWhichIsGoing = randomchyk.RandNum(0, Food.howManyFood);
-                newPos = food[toWhichIsGoing].shape.Position;
-
-                var thread1 = new Thread(new ThreadStart(() => BotChangePosition()));
-                goingForFood = true;
-            }
-
-            else if (!isPlayer)
+            if (!isPlayer)
                 newPos = food[toWhichIsGoing].shape.Position;
 
             if (newPos.X - oldPos.X < 0) d.X = -speed;
@@ -66,65 +57,92 @@ namespace Agario
 
             if (isPlayer)
                 TryShoot(d);
-
-            if (bullet != null)
-                bullet.Move();
         }
 
-        void BotChangePosition()
+        void NewSize()
         {
-            Thread.Sleep(2000);
-            goingForFood = false;
-        }
-
-        void NewSize(Food[] food, Entity[] bots)
-        {
-            if (LookIfAte(food, bots))
+            if (shape.Radius > howFatNeedToBe)
             {
-                shape.Radius += howManyEat;
-                speed -= howManyEat * 0.002f;
-
-                if (shape.Radius > howFatNeedToBe)
-                {
-                    speed += shape.Radius * 0.002f;
-                    shape.Radius = randomchyk.RandNum(15, 40);
-                    shape.Position = centre;
-                }
+                speed = 1;
+                shape.Radius = randomchyk.RandNum(15, 40);
+                shape.Position = centre;
             }
         }
 
-        bool IsIn(Vector2f obj1, Vector2f obj2, Vector2f smaller)
+        void Eat(float howManyEat)
+        {
+            shape.Radius += howManyEat;
+            speed = 1 / howManyEat;
+        }
+
+        public static bool IsIn(Vector2f obj1, Vector2f obj2, Vector2f smaller)
         {
             return Math.Abs(obj1.X - obj2.X) < smaller.X &&
                    Math.Abs(obj1.Y - obj2.Y) < smaller.Y;
         }
 
-        bool LookIfAte(Food[] food, Entity[] entities)
+        /*int LoopForEating(int length, Entity[] entities, Food[] food)
         {
             Vector2f radiusVect = new Vector2f(shape.Radius, shape.Radius);
 
+            for (int i = 0; i < length; i++)
+            {
+                if (IsIn(centre, entities[i].centre, radiusVect) && shape.Radius > entities[i].shape.Radius)
+                    return 1000 + i;
+
+                if (IsIn(centre, food[i].shape.Position, radiusVect))
+                    return 2000 + i;
+            }
+
+            return 0;
+        }*/
+
+        bool LookIfAte(Food[] food, Entity[] entities)
+        {
+            /*int num = LoopForEating(entities.Length, entities, food);
+
+            switch (num)
+            {
+                case 0: return false;
+                case > 1000:
+                    if (entities[num - 1000].isPlayer)
+                        entities[num - 1000] = new Entity(true, Color.White);
+                    else
+                        entities[num - 1000] = new Entity(false, randomchyk.RandColor());
+
+                    Eat(entities[num - 1000].shape.Radius / 2);
+                    return true;
+            }
+
+            if (LoopForEating(entities.Length, entities, food) == 0)
+                return false;
+
+            if (LoopForEating(entities.Length, entities, food) == 1)
+                return true;*/
+
+            Vector2f radiusVect = new Vector2f(shape.Radius, shape.Radius);
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                if (IsIn(centre, entities[i].centre, radiusVect)
+                    && shape.Radius > entities[i].shape.Radius)
+                {
+                    if (entities[i].isPlayer)
+                        entities[i] = new Entity(true, Color.White);
+                    else
+                        entities[i] = new Entity(false, randomchyk.RandColor());
+
+                    Eat(entities[i].shape.Radius / 2);
+                    return true;
+                }
+            }
             for (int i = 0; i < food.Length; i++)
             {
                 if (IsIn(centre, food[i].shape.Position, radiusVect))
                 {
                     food[i] = new Food(randomchyk.RandVect(), randomchyk.RandColor());
 
-                    howManyEat = Food.size / 10;
-                    return true;
-                }
-            }
-            for (int i = 0; i < entities.Length; i++)
-            {
-                if (IsIn(centre, entities[i].centre, radiusVect) 
-                    && shape.Radius > entities[i].shape.Radius)
-                {
-                    if (entities[i].isPlayer) 
-                        entities[i] = new Entity(true, Color.White);
-
-                    else
-                        entities[i] = new Entity(false, randomchyk.RandColor());
-
-                    howManyEat = (int)(entities[i].shape.Radius / 4);
+                    Eat(Food.size / 5);
                     return true;
                 }
             }
@@ -133,43 +151,31 @@ namespace Agario
 
         void TryShoot(Vector2f d)
         {
-            if (!isSpacePressed && Keyboard.IsKeyPressed(Keyboard.Key.Space) && shape.Radius > 40)
+            if (!isSpacePressed && Keyboard.IsKeyPressed(Keyboard.Key.Space) && shape.Radius > bullet.mass * 2)
             {
-                shape.Radius -= 20;
-                bullet = new Bullet(centre + d * shape.Radius, new Vector2f((int)(d.X * 10), (int)(d.Y * 10)));
+                shape.Radius -= bullet.mass;
+                bullet.Shoot(centre + d * shape.Radius, new Vector2f((int)(d.X * 5), (int)(d.Y * 5)));
                 isSpacePressed = true;
-                Bullet.shot = true;
+                bullet.shot = true;
             }
-
             else if (isSpacePressed && !Keyboard.IsKeyPressed(Keyboard.Key.Space))
                 isSpacePressed = false;
-        }
-
-        void LookIfShotSomeone(Entity[] entities)
-        {
-            for (int i = 0; i < entities.Length; i++)
-            {
-                if (entities[i].isPlayer)
-                    continue;
-
-                if (IsIn(entities[i].centre, bullet.shape.Position, new Vector2f(shape.Radius, shape.Radius)))
-                {
-                    bullet.shape = null;
-                    entities[i].shape.Radius /= 2;
-                    break;
-                }
-            }
         }
 
         public void Update(Food[] food, Entity[] entities)
         {
             Move(food);
-            NewSize(food, entities);
-            if (Bullet.shot && bullet.shape != null) 
-                LookIfShotSomeone(entities);
+            NewSize();
+            LookIfAte(food, entities);
 
-            if (Bullet.shot && bullet.shape != null)
-                Global.win.Draw(bullet.shape);
+            if (bullet.shot)
+                bullet.Update(entities);
+
+            if (bullet.shot)
+            {
+                for (int i = 0; i < bullet.ballz.Count; i++)
+                    Global.win.Draw(bullet.ballz[i]);
+            }
 
             Global.win.Draw(shape);
         }
