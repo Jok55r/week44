@@ -12,25 +12,26 @@ namespace Agario
         private const int howFatNeedToBe = 500;
 
         private bool isSpacePressed = false;
-        private int num = 0;
         readonly public bool isPlayer = false;
         readonly private int toWhichIsGoing = 0;
 
-        public Entity(bool isPlayer, Color col)
+        public Entity(bool isPlayer)
         {
             shape = new CircleShape(2 * Global.scale, 100)
             {
-                Position = Randomchyk.RandVect(),
-                FillColor = col,
+                Position = Rnd.RandVect(),
                 OutlineColor = Color.White,
                 OutlineThickness = 2
             };
             shape.Position += new Vector2f(shape.Radius, shape.Radius);
+            if (!isPlayer)
+                shape.FillColor = Rnd.RandColor();
+
             this.isPlayer = isPlayer;
             speed = 1;
 
             if (!isPlayer)
-                toWhichIsGoing = Randomchyk.RandNum(0, Food.howManyFood);
+                toWhichIsGoing = Rnd.RandNum(0, Food.howManyFood);
         }
 
         void Move(Food[] food)
@@ -59,7 +60,7 @@ namespace Agario
             if (shape.Radius > howFatNeedToBe)
             {
                 speed = 1;
-                shape.Radius = Randomchyk.RandNum(15, 40);
+                shape.Radius = Rnd.RandNum(15, 40);
                 shape.Position = Centre();
             }
         }
@@ -76,35 +77,32 @@ namespace Agario
                    Math.Abs(obj1.Y - obj2.Y) < smaller.Y;
         }
 
-        bool LoopForEating(int length, Ball[] circle)
+        Tuple<bool, int> LoopForEating(int length, Ball[] circle)
         {
             for (int i = 0; i < length; i++)
             {
                 if (IsIn(Centre(), circle[i].Centre(), new Vector2f(shape.Radius, shape.Radius)) && 
                     shape.Radius > circle[i].shape.Radius)
-                {
-                    num = i;
-                    return true;
-                }
+                    return Tuple.Create(true, i);
             }
-            return false;
+            return Tuple.Create(false, 0);
         }
 
         bool LookIfAte(Food[] food, Entity[] entities)
         {
-            if (LoopForEating(entities.Length, entities)) 
-            {
-                if (entities[num].isPlayer)
-                    entities[num] = new Entity(true, Color.White);
-                else
-                    entities[num] = new Entity(false, Randomchyk.RandColor());
+            Tuple<bool, int> eResult = LoopForEating(entities.Length, entities);
+            Tuple<bool, int> fResult = LoopForEating(food.Length, food);
 
-                Eat(entities[num].shape.Radius / 2);
+            if (eResult.Item1) 
+            {
+                entities[eResult.Item2] = new Entity(entities[eResult.Item2].isPlayer);
+
+                Eat(entities[eResult.Item2].shape.Radius / 2);
                 return true;
             }
-            else if (LoopForEating(food.Length, food)) 
+            else if (fResult.Item1) 
             {
-                food[num] = new Food(Randomchyk.RandVect(), Randomchyk.RandColor());
+                food[fResult.Item2] = new Food();
 
                 Eat(Food.size / 5);
                 return true;
@@ -117,7 +115,7 @@ namespace Agario
             if (!isSpacePressed && Keyboard.IsKeyPressed(Keyboard.Key.Space) && shape.Radius > bullet.mass * 2)
             {
                 shape.Radius -= bullet.mass;
-                bullet.Shoot(Centre() + d * shape.Radius);
+                bullet.Shoot((Vector2i)(Centre() + d * shape.Radius));
                 isSpacePressed = true;
                 bullet.shot = true;
             }
@@ -134,11 +132,11 @@ namespace Agario
             if (bullet.shot)
                 bullet.Update(entities);
 
-            if (bullet.shot)
+            /*if (bullet.shot)
             {
                 for (int i = 0; i < bullet.ballz.Count; i++)
                     Global.win.Draw(bullet.ballz[i]);
-            }
+            }*/
 
             Global.win.Draw(shape);
         }

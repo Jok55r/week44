@@ -18,16 +18,14 @@ namespace Agario
             Global.win.SetFramerateLimit(Global.fps);
 
             for (int i = 0; i < Food.howManyFood; i++)
-            {
-                food[i] = new Food(Randomchyk.RandVect(), Randomchyk.RandColor());
-            }
+                food[i] = new Food();
 
             for (int i = 0; i < Global.howManyEntities; i++)
             {
                 if (i == Global.howManyPlayers - 1)
-                   entities[i] = new Entity(true, Color.White);
+                   entities[i] = new Entity(true);
                 else 
-                    entities[i] = new Entity(false, Randomchyk.RandColor());
+                    entities[i] = new Entity(false);
             }
 
             while (Global.win.IsOpen)

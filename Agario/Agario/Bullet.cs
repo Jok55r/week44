@@ -2,6 +2,7 @@
 using SFML.System;
 using System.Collections.Generic;
 using SFML.Window;
+using System;
 
 namespace Agario
 {
@@ -9,38 +10,33 @@ namespace Agario
     {
         public float mass = 2 * Global.scale;
         public bool shot = false;
-        readonly private List<Vector2i> d = new List<Vector2i>();
-        public List<CircleShape> ballz = new List<CircleShape>();
+        readonly private List<Tuple<Vector2i, CircleShape>> ballz = new List<Tuple<Vector2i, CircleShape>>();
 
-        public void Shoot(Vector2f startPos)
+        public void Shoot(Vector2i startPos)
         {
-            ballz.Add(shape = new CircleShape(mass, 50)
+            shape = new CircleShape(mass, 50)
             {
-                Position = startPos,
                 FillColor = Color.Black,
                 OutlineColor = Color.Red,
                 OutlineThickness = 5,
-            });
-            d.Add(Mouse.GetPosition() - (Vector2i)startPos);
+            };
+            ballz.Add(Tuple.Create(Mouse.GetPosition() - startPos, shape));
 
             speed = 0.01f;
         }
 
         public void Move()
         {
-            for(int i = 0; i < ballz.Count; i++)
+            for (int i = 0; i < ballz.Count; i++)
             {
-                ballz[i].Position += (Vector2f)d[i] * speed;
+                ballz[i].Item2.Position += (Vector2f)ballz[i].Item1 * speed;
             }
         }
 
         void TryDestroy()
         {
             if (ballz.Count > 5)
-            {
                 ballz.RemoveAt(0);
-                d.RemoveAt(0);
-            }
         }
 
         void LookIfShotSomeone(Entity[] entities)
@@ -52,8 +48,8 @@ namespace Agario
 
                 for (int j = 0; j < ballz.Count; j++)
                 {
-                    if (Entity.IsIn(entities[i].Centre(), ballz[j].Position, 
-                        new Vector2f(entities[i].shape.Radius, entities[i].shape.Radius)))
+                    if (Entity.IsIn(entities[i].Centre(), ballz[j].Item2.Position,
+                           new Vector2f(entities[i].shape.Radius, entities[i].shape.Radius)))
                     {
                         ballz.RemoveAt(j);
                         entities[i].shape.Radius /= 2;
@@ -68,6 +64,9 @@ namespace Agario
             Move();
             TryDestroy();
             LookIfShotSomeone(entities);
+
+            for (int i = 0; i < ballz.Count; i++)
+                Global.win.Draw(ballz[i].Item2);
         }
     }
 }

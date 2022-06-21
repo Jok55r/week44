@@ -8,6 +8,11 @@ namespace Agario
         public CircleShape shape;
         public float speed = 0f;
 
+        public void Default()
+        {
+            shape = new CircleShape();
+        }
+
         public Vector2f Centre()
         {
             return shape.Position + new Vector2f(shape.Radius, shape.Radius);

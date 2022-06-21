@@ -8,12 +8,12 @@ namespace Agario
         public static int howManyFood = 4000 / Global.scale;
         public const int size = Global.scale;
 
-        public Food(Vector2f pos, Color col)
+        public Food()
         {
             shape = new CircleShape(size, 10)
             {
-                FillColor = col,
-                Position = pos,
+                FillColor = Rnd.RandColor(),
+                Position = Rnd.RandVect(),
             };
         }
 

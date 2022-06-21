@@ -4,7 +4,7 @@ using System;
 
 namespace Agario
 {
-    internal class Randomchyk
+    internal class Rnd
     {
         readonly private static Random rnd = new Random();
 
