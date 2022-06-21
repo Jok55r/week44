@@ -24,8 +24,6 @@ namespace Agario
         }
 
         public Vector2f Centre()
-        {
-            return shape.Position + new Vector2f(shape.Radius, shape.Radius);
-        }
+            => shape.Position + new Vector2f(shape.Radius, shape.Radius);
     }
 }

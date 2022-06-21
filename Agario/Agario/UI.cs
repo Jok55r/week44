@@ -1,9 +1,5 @@
-﻿using SFML;
-using SFML.Window;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
-using System.Diagnostics;
-using System;
 using System.Collections.Generic;
 
 namespace Agario
@@ -18,21 +14,26 @@ namespace Agario
             {
                 text.Add(new Text("", new Font(@"D:\Github\week44\Agario\Agario\shrift.ttf"))
                 {
-                    Position = new Vector2f(1800, (i + 1) * 50),
+                    Position = new Vector2f(10, i * 50),
                     Scale = new Vector2f(1, 1)
                 });
             }
         }
 
-        void UpdateStats()
+        void UpdateStats(Entity[] entities)
         {
-            for (int i = 0; i < text.Count; i++)
-                text[i].DisplayedString = $"-{i}- hidkgf";
+            for (int i = 0; i < entities.Length; i++)
+            {
+                if (entities[i].isPlayer)
+                    text[i].DisplayedString = $"{entities[i].score} (Player)";
+                else
+                    text[i].DisplayedString = $"{entities[i].score} (Bot)";
+            }
         }
 
-        public void Update()
+        public void Update(Entity[] entities)
         {
-            UpdateStats();
+            UpdateStats(entities);
             for (int i = 0; i < text.Count; i++)
                 Global.win.Draw(text[i]);
         }

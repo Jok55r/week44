@@ -15,8 +15,8 @@ namespace Agario
 
         private const int howFatNeedToBe = 500;
 
-        private readonly Text text = new Text("", new Font(@"D:\Github\week44\Agario\Agario\shrift.ttf"));
-        private int score = 0;
+        private readonly Text text = new Text("0", new Font(@"D:\Github\week44\Agario\Agario\font.ttf"));
+        public int score = 0;
         private bool isSpacePressed = false;
         readonly public bool isPlayer = false;
         readonly private int toWhichIsGoing = 0;
@@ -28,14 +28,11 @@ namespace Agario
             shape.Position += new Vector2f(shape.Radius, shape.Radius);
 
             this.isPlayer = isPlayer;
-
             if (!isPlayer)
             {
                 shape.FillColor = Rnd.RandColor();
                 toWhichIsGoing = Rnd.RandNum(0, Food.howManyFood);
             }
-            text.DisplayedString = "0";
-            text.Scale = new Vector2f(10, 10);
         }
         public override void SpawnBall()
         {
@@ -47,7 +44,6 @@ namespace Agario
         void Move(Food[] food)
         {
             Vector2f d = new Vector2f(0, 0);
-
             Vector2f oldPos = Centre();
             Vector2f newPos = (Vector2f)Mouse.GetPosition();
 
@@ -60,7 +56,6 @@ namespace Agario
             if (newPos.Y - oldPos.Y > 0) d.Y = speed;
 
             shape.Position = oldPos + d - new Vector2f(shape.Radius, shape.Radius);
-            text.Position = Centre() - new Vector2f(0, 300);
 
             if (isPlayer)
                 TryShoot(d);
@@ -73,9 +68,7 @@ namespace Agario
                 Vector2f pos = Centre();
                 SpawnBall();
                 shape.Position = pos;
-
                 score++;
-                text.DisplayedString = score.ToString();
             }
         }
 
@@ -90,10 +83,8 @@ namespace Agario
         }
 
         public static bool IsIn(Vector2f obj1, Vector2f obj2, float smaller)
-        {
-            return Math.Abs(obj1.X - obj2.X) < smaller &&
+            => Math.Abs(obj1.X - obj2.X) < smaller &&
                    Math.Abs(obj1.Y - obj2.Y) < smaller;
-        }
 
         Tuple<bool, int> LoopForEating(int length, List<Ball> circle)
         {
@@ -116,7 +107,6 @@ namespace Agario
                 Eat(eatable[result.Item2].shape.Radius / 4);
                 return true;
             }
-
             return false;
         }
 
@@ -133,11 +123,19 @@ namespace Agario
                 isSpacePressed = false;
         }
 
+        void TextUpdate()
+        {
+            text.Position = Centre();
+            text.DisplayedString = score.ToString();
+            text.Scale = new Vector2f(shape.Radius / 50, shape.Radius / 50);
+        }
+
         public void Update(Food[] food, Entity[] entities, List<Ball> eatable)
         {
             Move(food);
             NewSize();
             LookIfAte(eatable);
+            TextUpdate();
 
             if (bullet.shot)
                 bullet.Update(entities);

@@ -28,10 +28,9 @@ namespace Agario
                 else 
                     entities[i] = new Entity(false);
             }
+            eatableClass = new EatableObjects(entities, food);
 
             UI ui = new UI(entities);
-
-            eatableClass = new EatableObjects(entities, food);
 
             while (Global.win.IsOpen)
                 GameLoop(ui);
@@ -78,7 +77,7 @@ namespace Agario
             foreach (var entity in entities)
                 entity.Update(food, entities, eatableClass.eatable);
 
-            ui.Update();
+            ui.Update(entities);
         }
     }
 }
