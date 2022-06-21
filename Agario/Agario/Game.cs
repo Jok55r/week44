@@ -29,10 +29,12 @@ namespace Agario
                     entities[i] = new Entity(false);
             }
 
+            UI ui = new UI(entities);
+
             eatableClass = new EatableObjects(entities, food);
 
             while (Global.win.IsOpen)
-                GameLoop();
+                GameLoop(ui);
         }
 
         void CreateFile()
@@ -58,23 +60,25 @@ namespace Agario
             }
         }
 
-        void GameLoop()
+        void GameLoop(UI ui)
         {
             Global.win.DispatchEvents();
             Global.win.Clear(new Color(0, 30, 30));
 
-            Update();
+            Update(ui);
 
             Global.win.Display();
         }
 
-        void Update()
+        void Update(UI ui)
         {
             foreach (var foods in food)
                 foods.Update();
 
             foreach (var entity in entities)
                 entity.Update(food, entities, eatableClass.eatable);
+
+            ui.Update();
         }
     }
 }

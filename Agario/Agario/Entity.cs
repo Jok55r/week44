@@ -15,13 +15,15 @@ namespace Agario
 
         private const int howFatNeedToBe = 500;
 
+        private readonly Text text = new Text("", new Font(@"D:\Github\week44\Agario\Agario\shrift.ttf"));
+        private int score = 0;
         private bool isSpacePressed = false;
         readonly public bool isPlayer = false;
         readonly private int toWhichIsGoing = 0;
 
         public Entity(bool isPlayer)
         {
-            SetBall(Color.White, 2 * Global.scale, 2);
+            SetBall(Color.Black, 2 * Global.scale, 2);
             SpawnBall();
             shape.Position += new Vector2f(shape.Radius, shape.Radius);
 
@@ -32,6 +34,8 @@ namespace Agario
                 shape.FillColor = Rnd.RandColor();
                 toWhichIsGoing = Rnd.RandNum(0, Food.howManyFood);
             }
+            text.DisplayedString = "0";
+            text.Scale = new Vector2f(10, 10);
         }
         public override void SpawnBall()
         {
@@ -56,6 +60,7 @@ namespace Agario
             if (newPos.Y - oldPos.Y > 0) d.Y = speed;
 
             shape.Position = oldPos + d - new Vector2f(shape.Radius, shape.Radius);
+            text.Position = Centre() - new Vector2f(0, 300);
 
             if (isPlayer)
                 TryShoot(d);
@@ -68,6 +73,9 @@ namespace Agario
                 Vector2f pos = Centre();
                 SpawnBall();
                 shape.Position = pos;
+
+                score++;
+                text.DisplayedString = score.ToString();
             }
         }
 
@@ -135,6 +143,7 @@ namespace Agario
                 bullet.Update(entities);
 
             Global.win.Draw(shape);
+            Global.win.Draw(text);
         }
     }
 }
