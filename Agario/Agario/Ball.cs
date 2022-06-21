@@ -8,9 +8,19 @@ namespace Agario
         public CircleShape shape;
         public float speed = 0f;
 
-        public void Default()
+        public virtual void SpawnBall()
         {
-            shape = new CircleShape();
+            shape.Position = Rnd.RandVect();
+        }
+
+        public void SetBall(Color col, float rad, int thick)
+        {
+            shape = new CircleShape(rad, 100)
+            {
+                FillColor = col,
+                OutlineColor = Color.White,
+                OutlineThickness = thick,
+            };
         }
 
         public Vector2f Centre()

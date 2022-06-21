@@ -16,6 +16,7 @@ namespace Agario
         {
             shape = new CircleShape(mass, 50)
             {
+                Position = (Vector2f)startPos,
                 FillColor = Color.Black,
                 OutlineColor = Color.Red,
                 OutlineThickness = 5,
@@ -35,7 +36,7 @@ namespace Agario
 
         void TryDestroy()
         {
-            if (ballz.Count > 5)
+            if (ballz.Count > 1000)
                 ballz.RemoveAt(0);
         }
 
@@ -48,8 +49,7 @@ namespace Agario
 
                 for (int j = 0; j < ballz.Count; j++)
                 {
-                    if (Entity.IsIn(entities[i].Centre(), ballz[j].Item2.Position,
-                           new Vector2f(entities[i].shape.Radius, entities[i].shape.Radius)))
+                    if (Entity.IsIn(entities[i].Centre(), ballz[j].Item2.Position, entities[i].shape.Radius))
                     {
                         ballz.RemoveAt(j);
                         entities[i].shape.Radius /= 2;

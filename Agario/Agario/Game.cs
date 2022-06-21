@@ -8,6 +8,7 @@ namespace Agario
     {
         readonly private Entity[] entities = new Entity[Global.howManyEntities];
         readonly private Food[] food = new Food[Food.howManyFood];
+        private EatableObjects eatableClass;
 
         public void GameStart()
         {
@@ -28,10 +29,10 @@ namespace Agario
                     entities[i] = new Entity(false);
             }
 
+            eatableClass = new EatableObjects(entities, food);
+
             while (Global.win.IsOpen)
-            {
                 GameLoop();
-            }
         }
 
         void CreateFile()
@@ -73,7 +74,7 @@ namespace Agario
                 foods.Update();
 
             foreach (var entity in entities)
-                entity.Update(food, entities);
+                entity.Update(food, entities, eatableClass.eatable);
         }
     }
 }

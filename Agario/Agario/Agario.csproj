@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="Bullet.cs" />
     <Compile Include="Ball.cs" />
+    <Compile Include="EatableObjects.cs" />
     <Compile Include="Food.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Entity.cs" />

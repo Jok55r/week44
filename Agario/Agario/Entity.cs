@@ -2,11 +2,15 @@
 using SFML.Graphics;
 using SFML.System;
 using System;
+using System.Collections.Generic;
 
 namespace Agario
 {
     internal class Entity : Ball
     {
+        private const float maxSpeed = 1f;
+        private const float minSpeed = 0.2f;
+
         readonly private Bullet bullet = new Bullet();
 
         private const int howFatNeedToBe = 500;
@@ -17,21 +21,23 @@ namespace Agario
 
         public Entity(bool isPlayer)
         {
-            shape = new CircleShape(2 * Global.scale, 100)
-            {
-                Position = Rnd.RandVect(),
-                OutlineColor = Color.White,
-                OutlineThickness = 2
-            };
+            SetBall(Color.White, 2 * Global.scale, 2);
+            SpawnBall();
             shape.Position += new Vector2f(shape.Radius, shape.Radius);
-            if (!isPlayer)
-                shape.FillColor = Rnd.RandColor();
 
             this.isPlayer = isPlayer;
-            speed = 1;
 
             if (!isPlayer)
+            {
+                shape.FillColor = Rnd.RandColor();
                 toWhichIsGoing = Rnd.RandNum(0, Food.howManyFood);
+            }
+        }
+        public override void SpawnBall()
+        {
+            base.SpawnBall();
+            shape.Radius = 2 * Global.scale;
+            speed = 1;
         }
 
         void Move(Food[] food)
@@ -59,9 +65,9 @@ namespace Agario
         {
             if (shape.Radius > howFatNeedToBe)
             {
-                speed = 1;
-                shape.Radius = Rnd.RandNum(15, 40);
-                shape.Position = Centre();
+                Vector2f pos = Centre();
+                SpawnBall();
+                shape.Position = pos;
             }
         }
 
@@ -69,44 +75,40 @@ namespace Agario
         {
             shape.Radius += howManyEat;
             speed = 1 / (shape.Radius / 30);
+            if (speed < minSpeed)
+                speed = minSpeed;
+            else if (speed > maxSpeed)
+                speed = maxSpeed;
         }
 
-        public static bool IsIn(Vector2f obj1, Vector2f obj2, Vector2f smaller)
+        public static bool IsIn(Vector2f obj1, Vector2f obj2, float smaller)
         {
-            return Math.Abs(obj1.X - obj2.X) < smaller.X &&
-                   Math.Abs(obj1.Y - obj2.Y) < smaller.Y;
+            return Math.Abs(obj1.X - obj2.X) < smaller &&
+                   Math.Abs(obj1.Y - obj2.Y) < smaller;
         }
 
-        Tuple<bool, int> LoopForEating(int length, Ball[] circle)
+        Tuple<bool, int> LoopForEating(int length, List<Ball> circle)
         {
             for (int i = 0; i < length; i++)
             {
-                if (IsIn(Centre(), circle[i].Centre(), new Vector2f(shape.Radius, shape.Radius)) && 
-                    shape.Radius > circle[i].shape.Radius)
+                if (IsIn(Centre(), circle[i].Centre(), shape.Radius) && shape.Radius > circle[i].shape.Radius)
                     return Tuple.Create(true, i);
             }
             return Tuple.Create(false, 0);
         }
 
-        bool LookIfAte(Food[] food, Entity[] entities)
+        bool LookIfAte(List<Ball> eatable)
         {
-            Tuple<bool, int> eResult = LoopForEating(entities.Length, entities);
-            Tuple<bool, int> fResult = LoopForEating(food.Length, food);
+            Tuple<bool, int> result = LoopForEating(eatable.Count, eatable);
 
-            if (eResult.Item1) 
+            if (result.Item1)
             {
-                entities[eResult.Item2] = new Entity(entities[eResult.Item2].isPlayer);
+                eatable[result.Item2].SpawnBall();
 
-                Eat(entities[eResult.Item2].shape.Radius / 2);
+                Eat(eatable[result.Item2].shape.Radius / 4);
                 return true;
             }
-            else if (fResult.Item1) 
-            {
-                food[fResult.Item2] = new Food();
 
-                Eat(Food.size / 5);
-                return true;
-            }
             return false;
         }
 
@@ -123,11 +125,11 @@ namespace Agario
                 isSpacePressed = false;
         }
 
-        public void Update(Food[] food, Entity[] entities)
+        public void Update(Food[] food, Entity[] entities, List<Ball> eatable)
         {
             Move(food);
             NewSize();
-            LookIfAte(food, entities);
+            LookIfAte(eatable);
 
             if (bullet.shot)
                 bullet.Update(entities);

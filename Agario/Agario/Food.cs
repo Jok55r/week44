@@ -1,7 +1,4 @@
-﻿using SFML.Graphics;
-using SFML.System;
-
-namespace Agario
+﻿namespace Agario
 {
     internal class Food : Ball
     {
@@ -10,11 +7,8 @@ namespace Agario
 
         public Food()
         {
-            shape = new CircleShape(size, 10)
-            {
-                FillColor = Rnd.RandColor(),
-                Position = Rnd.RandVect(),
-            };
+            SetBall(Rnd.RandColor(), size, 0);
+            SpawnBall();
         }
 
         public void Update()
