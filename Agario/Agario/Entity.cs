@@ -132,12 +132,6 @@ namespace Agario
             if (bullet.shot)
                 bullet.Update(entities);
 
-            /*if (bullet.shot)
-            {
-                for (int i = 0; i < bullet.ballz.Count; i++)
-                    Global.win.Draw(bullet.ballz[i]);
-            }*/
-
             Global.win.Draw(shape);
         }
     }
