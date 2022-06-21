@@ -6,15 +6,15 @@ namespace Agario
 {
     internal class Randomchyk
     {
-        readonly private Random rnd = new Random();
+        readonly private static Random rnd = new Random();
 
-        public Vector2f RandVect() 
+        public static Vector2f RandVect() 
             => new Vector2f(rnd.Next(0, (int)Global.win.Size.X), rnd.Next(0, (int)Global.win.Size.Y));
 
-        public Color RandColor() 
+        public static Color RandColor() 
             => new Color((byte)rnd.Next(1, 255), (byte)rnd.Next(1, 255), (byte)rnd.Next(1, 255));
 
-        public int RandNum(int min, int max) 
+        public static int RandNum(int min, int max) 
             => rnd.Next(min, max);
     }
 }

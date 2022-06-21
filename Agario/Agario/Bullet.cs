@@ -1,17 +1,18 @@
 ﻿using SFML.Graphics;
 using SFML.System;
 using System.Collections.Generic;
+using SFML.Window;
 
 namespace Agario
 {
-    internal class Bullet : Circle
+    internal class Bullet : Ball
     {
         public float mass = 2 * Global.scale;
         public bool shot = false;
-        readonly private List<Vector2f> d = new List<Vector2f>();
+        readonly private List<Vector2i> d = new List<Vector2i>();
         public List<CircleShape> ballz = new List<CircleShape>();
 
-        public void Shoot(Vector2f startPos, Vector2f d)
+        public void Shoot(Vector2f startPos)
         {
             ballz.Add(shape = new CircleShape(mass, 50)
             {
@@ -20,15 +21,16 @@ namespace Agario
                 OutlineColor = Color.Red,
                 OutlineThickness = 5,
             });
+            d.Add(Mouse.GetPosition() - (Vector2i)startPos);
 
-            this.d.Add(d);
+            speed = 0.01f;
         }
 
         public void Move()
         {
             for(int i = 0; i < ballz.Count; i++)
             {
-                ballz[i].Position += d[i];
+                ballz[i].Position += (Vector2f)d[i] * speed;
             }
         }
 
@@ -50,7 +52,8 @@ namespace Agario
 
                 for (int j = 0; j < ballz.Count; j++)
                 {
-                    if (Entity.IsIn(entities[i].centre, ballz[j].Position, new Vector2f(shape.Radius, shape.Radius)))
+                    if (Entity.IsIn(entities[i].Centre(), ballz[j].Position, 
+                        new Vector2f(entities[i].shape.Radius, entities[i].shape.Radius)))
                     {
                         ballz.RemoveAt(j);
                         entities[i].shape.Radius /= 2;

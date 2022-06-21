@@ -2,47 +2,42 @@
 using SFML.Graphics;
 using SFML.System;
 using System;
-using System.Threading;
 
 namespace Agario
 {
-    internal class Entity : Circle
+    internal class Entity : Ball
     {
-        private const int howFatNeedToBe = 500;
-
-        readonly private Randomchyk randomchyk = new Randomchyk();
         readonly private Bullet bullet = new Bullet();
 
-        private bool isSpacePressed = false;
+        private const int howFatNeedToBe = 500;
 
+        private bool isSpacePressed = false;
+        private int num = 0;
         readonly public bool isPlayer = false;
-        private float speed = 1f;
         readonly private int toWhichIsGoing = 0;
-        public Vector2f centre = new Vector2f(0, 0);
 
         public Entity(bool isPlayer, Color col)
         {
             shape = new CircleShape(2 * Global.scale, 100)
             {
-                Position = randomchyk.RandVect(),
+                Position = Randomchyk.RandVect(),
                 FillColor = col,
                 OutlineColor = Color.White,
                 OutlineThickness = 2
             };
             shape.Position += new Vector2f(shape.Radius, shape.Radius);
             this.isPlayer = isPlayer;
+            speed = 1;
 
             if (!isPlayer)
-                toWhichIsGoing = randomchyk.RandNum(0, Food.howManyFood);
+                toWhichIsGoing = Randomchyk.RandNum(0, Food.howManyFood);
         }
 
         void Move(Food[] food)
         {
-            centre = shape.Position + new Vector2f(shape.Radius, shape.Radius);
-
             Vector2f d = new Vector2f(0, 0);
 
-            Vector2f oldPos = centre;
+            Vector2f oldPos = Centre();
             Vector2f newPos = (Vector2f)Mouse.GetPosition();
 
             if (!isPlayer)
@@ -64,15 +59,15 @@ namespace Agario
             if (shape.Radius > howFatNeedToBe)
             {
                 speed = 1;
-                shape.Radius = randomchyk.RandNum(15, 40);
-                shape.Position = centre;
+                shape.Radius = Randomchyk.RandNum(15, 40);
+                shape.Position = Centre();
             }
         }
 
         void Eat(float howManyEat)
         {
             shape.Radius += howManyEat;
-            speed = 1 / howManyEat;
+            speed = 1 / (shape.Radius / 30);
         }
 
         public static bool IsIn(Vector2f obj1, Vector2f obj2, Vector2f smaller)
@@ -81,70 +76,38 @@ namespace Agario
                    Math.Abs(obj1.Y - obj2.Y) < smaller.Y;
         }
 
-        /*int LoopForEating(int length, Entity[] entities, Food[] food)
+        bool LoopForEating(int length, Ball[] circle)
         {
-            Vector2f radiusVect = new Vector2f(shape.Radius, shape.Radius);
-
             for (int i = 0; i < length; i++)
             {
-                if (IsIn(centre, entities[i].centre, radiusVect) && shape.Radius > entities[i].shape.Radius)
-                    return 1000 + i;
-
-                if (IsIn(centre, food[i].shape.Position, radiusVect))
-                    return 2000 + i;
+                if (IsIn(Centre(), circle[i].Centre(), new Vector2f(shape.Radius, shape.Radius)) && 
+                    shape.Radius > circle[i].shape.Radius)
+                {
+                    num = i;
+                    return true;
+                }
             }
-
-            return 0;
-        }*/
+            return false;
+        }
 
         bool LookIfAte(Food[] food, Entity[] entities)
         {
-            /*int num = LoopForEating(entities.Length, entities, food);
-
-            switch (num)
+            if (LoopForEating(entities.Length, entities)) 
             {
-                case 0: return false;
-                case > 1000:
-                    if (entities[num - 1000].isPlayer)
-                        entities[num - 1000] = new Entity(true, Color.White);
-                    else
-                        entities[num - 1000] = new Entity(false, randomchyk.RandColor());
+                if (entities[num].isPlayer)
+                    entities[num] = new Entity(true, Color.White);
+                else
+                    entities[num] = new Entity(false, Randomchyk.RandColor());
 
-                    Eat(entities[num - 1000].shape.Radius / 2);
-                    return true;
+                Eat(entities[num].shape.Radius / 2);
+                return true;
             }
-
-            if (LoopForEating(entities.Length, entities, food) == 0)
-                return false;
-
-            if (LoopForEating(entities.Length, entities, food) == 1)
-                return true;*/
-
-            Vector2f radiusVect = new Vector2f(shape.Radius, shape.Radius);
-
-            for (int i = 0; i < entities.Length; i++)
+            else if (LoopForEating(food.Length, food)) 
             {
-                if (IsIn(centre, entities[i].centre, radiusVect)
-                    && shape.Radius > entities[i].shape.Radius)
-                {
-                    if (entities[i].isPlayer)
-                        entities[i] = new Entity(true, Color.White);
-                    else
-                        entities[i] = new Entity(false, randomchyk.RandColor());
+                food[num] = new Food(Randomchyk.RandVect(), Randomchyk.RandColor());
 
-                    Eat(entities[i].shape.Radius / 2);
-                    return true;
-                }
-            }
-            for (int i = 0; i < food.Length; i++)
-            {
-                if (IsIn(centre, food[i].shape.Position, radiusVect))
-                {
-                    food[i] = new Food(randomchyk.RandVect(), randomchyk.RandColor());
-
-                    Eat(Food.size / 5);
-                    return true;
-                }
+                Eat(Food.size / 5);
+                return true;
             }
             return false;
         }
@@ -154,7 +117,7 @@ namespace Agario
             if (!isSpacePressed && Keyboard.IsKeyPressed(Keyboard.Key.Space) && shape.Radius > bullet.mass * 2)
             {
                 shape.Radius -= bullet.mass;
-                bullet.Shoot(centre + d * shape.Radius, new Vector2f((int)(d.X * 5), (int)(d.Y * 5)));
+                bullet.Shoot(Centre() + d * shape.Radius);
                 isSpacePressed = true;
                 bullet.shot = true;
             }

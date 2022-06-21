@@ -3,9 +3,9 @@ using SFML.System;
 
 namespace Agario
 {
-    internal class Food : Circle
+    internal class Food : Ball
     {
-        public static int howManyFood = (int)(4000 / Global.scale);
+        public static int howManyFood = 4000 / Global.scale;
         public const int size = Global.scale;
 
         public Food(Vector2f pos, Color col)

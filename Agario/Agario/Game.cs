@@ -6,7 +6,6 @@ namespace Agario
 {
     internal class Game
     {
-        readonly private Randomchyk randomchyk = new Randomchyk();
         readonly private Entity[] entities = new Entity[Global.howManyEntities];
         readonly private Food[] food = new Food[Food.howManyFood];
 
@@ -20,7 +19,7 @@ namespace Agario
 
             for (int i = 0; i < Food.howManyFood; i++)
             {
-                food[i] = new Food(randomchyk.RandVect(), randomchyk.RandColor());
+                food[i] = new Food(Randomchyk.RandVect(), Randomchyk.RandColor());
             }
 
             for (int i = 0; i < Global.howManyEntities; i++)
@@ -28,7 +27,7 @@ namespace Agario
                 if (i == Global.howManyPlayers - 1)
                    entities[i] = new Entity(true, Color.White);
                 else 
-                    entities[i] = new Entity(false, randomchyk.RandColor());
+                    entities[i] = new Entity(false, Randomchyk.RandColor());
             }
 
             while (Global.win.IsOpen)
@@ -54,9 +53,8 @@ namespace Agario
 
                 StreamWriter sw = new StreamWriter(path);
 
-                sw.WriteLine(lines[0]);
-                sw.WriteLine(lines[1]);
-                sw.WriteLine(lines[2]);
+                for (int i = 0; i < lines.Length; i++)
+                    sw.WriteLine(lines[i]);
                 sw.Close();
             }
         }
