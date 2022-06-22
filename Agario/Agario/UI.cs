@@ -12,7 +12,7 @@ namespace Agario
         {
             for (int i = 0; i < entities.Length; i++)
             {
-                text.Add(new Text("", new Font(@"D:\Github\week44\Agario\Agario\shrift.ttf"))
+                text.Add(new Text("", new Font(@"D:\Github\week44\Agario\Agario\font.ttf"))
                 {
                     Position = new Vector2f(10, i * 50),
                     Scale = new Vector2f(1, 1)
