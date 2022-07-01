@@ -1,7 +1,6 @@
 ﻿using SFML.Window;
 using SFML.Graphics;
 using System.IO;
-using System;
 
 namespace Agario
 {
@@ -14,20 +13,14 @@ namespace Agario
         public const int howManyEntities = 10;
 
         public static RenderWindow win = new RenderWindow
-            (new VideoMode(Try(lines[0]), Try(lines[1])), lines[2]);
+            (new VideoMode(ToUint(lines[0]), ToUint(lines[1])), lines[2]);
 
-        private static uint Try(string line)
+        private static uint ToUint(string line)
         {
             if (uint.TryParse(line, out var number))
-                return uint.Parse(line);
+                return number;
 
             return 1000;
-        }
-
-        public static void WindowClosed(object sender, EventArgs e)
-        {
-            RenderWindow w = (RenderWindow)sender;
-            w.Close();
         }
     }
 }

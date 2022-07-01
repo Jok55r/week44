@@ -1,6 +1,5 @@
 ﻿using SFML.Graphics;
 using SFML.System;
-using System.Collections.Generic;
 using SFML.Window;
 using System;
 
@@ -10,51 +9,37 @@ namespace Agario
     {
         public float mass = 2 * Global.scale;
         public bool shot = false;
-        readonly private List<Tuple<Vector2i, CircleShape>> ballz = new List<Tuple<Vector2i, CircleShape>>();
+        private Tuple<Vector2i, CircleShape> bullet;
 
-        public void Shoot(Vector2i startPos)
+        public void Shoot(Vector2f startPos)
         {
             shape = new CircleShape(mass, 50)
             {
-                Position = (Vector2f)startPos,
+                Position = startPos,
                 FillColor = Color.Black,
                 OutlineColor = Color.Red,
                 OutlineThickness = 5,
             };
-            ballz.Add(Tuple.Create(Mouse.GetPosition() - startPos, shape));
+            bullet = Tuple.Create(Mouse.GetPosition() - (Vector2i)startPos, shape);
 
             speed = 0.01f;
         }
 
         public void Move()
-        {
-            for (int i = 0; i < ballz.Count; i++)
-            {
-                ballz[i].Item2.Position += (Vector2f)ballz[i].Item1 * speed;
-            }
-        }
-
-        void TryDestroy()
-        {
-            if (ballz.Count > 1000)
-                ballz.RemoveAt(0);
-        }
+            => bullet.Item2.Position += (Vector2f) bullet.Item1 * speed;
 
         void LookIfShotSomeone(Entity[] entities)
         {
-            for (int i = 0; i < entities.Length; i++)
+            foreach (var entity in entities)
             {
-                if (entities[i].isPlayer)
+                if (entity.isPlayer)
                     continue;
 
-                for (int j = 0; j < ballz.Count; j++)
+                if (Entity.IsIn(entity.Centre(), bullet.Item2.Position, entity.shape.Radius))
                 {
-                    if (Entity.IsIn(entities[i].Centre(), ballz[j].Item2.Position, entities[i].shape.Radius))
-                    {
-                        ballz.RemoveAt(j);
-                        entities[i].shape.Radius /= 2;
-                        break;
-                    }
+                    //bullet = null;
+                    entity.shape.Radius /= 2;
+                    break;
                 }
             }
         }
@@ -62,11 +47,9 @@ namespace Agario
         public void Update(Entity[] entities)
         {
             Move();
-            TryDestroy();
             LookIfShotSomeone(entities);
 
-            for (int i = 0; i < ballz.Count; i++)
-                Global.win.Draw(ballz[i].Item2);
+            Global.win.Draw(bullet.Item2);
         }
     }
 }

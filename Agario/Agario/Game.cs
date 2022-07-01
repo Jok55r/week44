@@ -1,6 +1,7 @@
 ﻿using SFML.Graphics;
 using System.IO;
-using System.Threading.Tasks;
+using System;
+using SFML.Window;
 
 namespace Agario
 {
@@ -9,13 +10,13 @@ namespace Agario
         readonly private Entity[] entities = new Entity[Global.howManyEntities];
         readonly private Food[] food = new Food[Food.howManyFood];
         private EatableObjects eatableClass;
+        readonly private UI ui = new UI();
 
         public void GameStart()
         {
-            var task = Task.Factory.StartNew(() => CreateFile());
-            Task.WaitAll(task);
+            CreateFile();
 
-            Global.win.Closed += Global.WindowClosed;
+            Global.win.Closed += WindowClosed;
             Global.win.SetFramerateLimit(Global.fps);
 
             for (int i = 0; i < Food.howManyFood; i++)
@@ -24,52 +25,52 @@ namespace Agario
             for (int i = 0; i < Global.howManyEntities; i++)
             {
                 if (i == Global.howManyPlayers - 1)
-                   entities[i] = new Entity(true);
-                else 
-                    entities[i] = new Entity(false);
+                    CreatePlayer(i);
+                else
+                    CreateBot(i);
             }
             eatableClass = new EatableObjects(entities, food);
 
-            UI ui = new UI(entities);
+            ui.Create(entities);
 
             while (Global.win.IsOpen)
-                GameLoop(ui);
+                GameLoop();
         }
+
+        void CreatePlayer(int i)
+            => entities[i] = new Entity(true);
+        void CreateBot(int i)
+            => entities[i] = new Entity(false);
 
         void CreateFile()
         {
             string path = @"D:\Github\week44\Agario\Agario\bin\Debug\ReadIt.ini";
+
+            if (File.Exists(path))
+                return;
+
             string[] lines = { "1920", "1080", "Deez" };
+            var ini = File.Create("ReadIt.ini");
+            ini.Close();
 
-            try
-            {
-                StreamReader sr = new StreamReader(path);
-                sr.Close();
-            }
-            catch
-            {
-                var ini = File.Create("ReadIt.ini");
-                ini.Close();
+            StreamWriter sw = new StreamWriter(path);
 
-                StreamWriter sw = new StreamWriter(path);
-
-                for (int i = 0; i < lines.Length; i++)
-                    sw.WriteLine(lines[i]);
-                sw.Close();
-            }
+            for (int i = 0; i < lines.Length; i++)
+                sw.WriteLine(lines[i]);
+            sw.Close();
         }
 
-        void GameLoop(UI ui)
+        void GameLoop()
         {
             Global.win.DispatchEvents();
             Global.win.Clear(new Color(0, 30, 30));
 
-            Update(ui);
+            Update();
 
             Global.win.Display();
         }
 
-        void Update(UI ui)
+        void Update()
         {
             foreach (var foods in food)
                 foods.Update();
@@ -78,6 +79,12 @@ namespace Agario
                 entity.Update(food, entities, eatableClass.eatable);
 
             ui.Update(entities);
+        }
+
+        private void WindowClosed(object sender, EventArgs e)
+        {
+            RenderWindow w = (RenderWindow)sender;
+            w.Close();
         }
     }
 }

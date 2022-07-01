@@ -8,9 +8,13 @@ namespace Agario
 {
     internal class Entity : Ball
     {
+        private readonly Controller controller;
+        private readonly List<Keyboard.Key> keys;
+
         private const float maxSpeed = 1f;
         private const float minSpeed = 0.2f;
 
+        //private List<Bullet> bullet = new List<Bullet>();
         readonly private Bullet bullet = new Bullet();
 
         private const int howFatNeedToBe = 500;
@@ -23,6 +27,9 @@ namespace Agario
 
         public Entity(bool isPlayer)
         {
+            keys.Add(Keyboard.Key.Space);
+            controller = new Controller(keys);
+
             SetBall(Color.Black, 2 * Global.scale, 2);
             SpawnBall();
             shape.Position += new Vector2f(shape.Radius, shape.Radius);
@@ -43,22 +50,18 @@ namespace Agario
 
         void Move(Food[] food)
         {
-            Vector2f d = new Vector2f(0, 0);
             Vector2f oldPos = Centre();
             Vector2f newPos = (Vector2f)Mouse.GetPosition();
 
             if (!isPlayer)
                 newPos = food[toWhichIsGoing].shape.Position;
 
-            if (newPos.X - oldPos.X < 0) d.X = -speed;
-            if (newPos.X - oldPos.X > 0) d.X = speed;
-            if (newPos.Y - oldPos.Y < 0) d.Y = -speed;
-            if (newPos.Y - oldPos.Y > 0) d.Y = speed;
+            Vector2f dist = oldPos - newPos;
 
-            shape.Position = oldPos + d - new Vector2f(shape.Radius, shape.Radius);
+            shape.Position = oldPos + (dist / speed);
 
             if (isPlayer)
-                TryShoot(d);
+                TryShoot();
         }
 
         void NewSize()
@@ -110,17 +113,19 @@ namespace Agario
             return false;
         }
 
-        void TryShoot(Vector2f d)
+        void TryShoot()
         {
-            if (!isSpacePressed && Keyboard.IsKeyPressed(Keyboard.Key.Space) && shape.Radius > bullet.mass * 2)
+            if (!isSpacePressed && controller.Pressed(keys[0]) && shape.Radius > bullet.mass * 2)
             {
                 shape.Radius -= bullet.mass;
-                bullet.Shoot((Vector2i)(Centre() + d * shape.Radius));
+                bullet.Shoot(Centre() * shape.Radius);
                 isSpacePressed = true;
                 bullet.shot = true;
             }
-            else if (isSpacePressed && !Keyboard.IsKeyPressed(Keyboard.Key.Space))
+            else if (isSpacePressed && !controller.Pressed(keys[0]))
+            {
                 isSpacePressed = false;
+            }
         }
 
         void TextUpdate()

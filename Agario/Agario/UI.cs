@@ -8,7 +8,7 @@ namespace Agario
     {
         private readonly List<Text> text = new List<Text>();
 
-        public UI(Entity[] entities)
+        public void Create(Entity[] entities)
         {
             for (int i = 0; i < entities.Length; i++)
             {
